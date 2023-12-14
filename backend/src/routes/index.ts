@@ -1,11 +1,9 @@
 import { Router } from "express";
 
+import { userRoutes } from "./user-routes";
+import { chatRoutes } from "./chat-routes";
+
 export const router = Router();
 
-router.get("/", (req, res, next) => {
-    res.send("ok");
-});
-
-router.get("/home", (req, res, next) => {
-    res.send("home");
-});
+router.use("/user", userRoutes); // domain/api/v1/user
+router.use("/chat", chatRoutes); // domain/api/v1/chat
