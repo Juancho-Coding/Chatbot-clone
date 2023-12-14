@@ -1,7 +1,10 @@
 import express from "express";
 import bodyParser from "body-parser";
+import morgan from "morgan";
+import cookieParser from "cookie-parser";
 
 import { router as mainRoutes } from "./routes/index";
+import errorHandler from "./routes/errorHandler";
 
 /**
  * Creates an express app to start the server
@@ -9,8 +12,14 @@ import { router as mainRoutes } from "./routes/index";
  */
 export default function createServer() {
     const app = express();
+    app.use(morgan("dev")); // request logging, remove in production
+
     app.use(bodyParser.json()); // parse incoming json data
     app.use(bodyParser.urlencoded({ extended: false }));
-    app.use(mainRoutes);
+    app.use(cookieParser(process.env.COOKIE_SECRET)); // parse incoming cookies
+
+    app.use("/api/v1", mainRoutes);
+    app.use(errorHandler);
+
     return app;
 }
