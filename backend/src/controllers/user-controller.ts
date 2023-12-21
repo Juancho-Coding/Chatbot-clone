@@ -38,7 +38,7 @@ export async function signupUser(req: Request, res: Response, next: NextFunction
         const hashedPass = await bcrypt.hash(password, 10); // hashed password
         const newUser = new User({ name: name, email: email, password: hashedPass });
         await newUser.save();
-        res.status(201).json({ msg: "User created", id: newUser._id });
+        res.status(201).json({ msg: "User created", name: name, email: email });
     } catch (error) {
         next(error);
     }
@@ -84,6 +84,8 @@ export async function loginUser(req: Request, res: Response, next: NextFunction)
         return res.status(200).json({
             token: token,
             user: foundUser._id.toHexString(),
+            name: foundUser.name,
+            email: foundUser.email,
         });
     } catch (error) {
         next(error);
