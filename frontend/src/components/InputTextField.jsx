@@ -4,7 +4,7 @@ import { TextField } from "@mui/material";
 const InputTextField = ({ name, type, label, error }) => {
     return (
         <TextField
-            error={error ? "error" : ""}
+            error={error}
             type={type}
             name={name}
             label={label}

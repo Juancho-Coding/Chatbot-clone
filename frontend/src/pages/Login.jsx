@@ -1,5 +1,5 @@
 import { Box, Typography, Button } from "@mui/material";
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 
@@ -13,6 +13,18 @@ const Login = () => {
     const [error, setError] = useState(false);
     const login = useContext(AuthContext).login;
     const navigate = useNavigate();
+
+    useEffect(() => {
+        let identifier = null;
+        if (error) {
+            identifier = setTimeout(() => {
+                setError(false);
+            }, 5000);
+        }
+        return () => {
+            if (identifier) clearTimeout(identifier);
+        };
+    }, [error]);
 
     const submitHandler = async (event) => {
         event.preventDefault();
