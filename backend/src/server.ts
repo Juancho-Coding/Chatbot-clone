@@ -14,7 +14,7 @@ import errorHandler from "./routes/errorHandler";
 export default function createServer() {
     const app = express();
     app.use(morgan("dev")); // request logging, remove in production
-    app.use(cors()); // allow request from othe domains
+    app.use(cors({ credentials: true, origin: "http://localhost:5173" })); // allow request from othe domains
     app.use(bodyParser.json()); // parse incoming json data
     app.use(bodyParser.urlencoded({ extended: false }));
     app.use(cookieParser(process.env.COOKIE_SECRET)); // parse incoming cookies

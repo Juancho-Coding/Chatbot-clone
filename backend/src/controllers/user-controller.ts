@@ -53,6 +53,7 @@ export async function loginUser(req: Request, res: Response, next: NextFunction)
     // check for validation errors
     if (checkValidationErrors(req, res, 422)) return;
     // no error, continue login
+    log("entre");
     try {
         let foundUser = await User.findOne({ email: email });
         if (!foundUser) {
@@ -65,7 +66,9 @@ export async function loginUser(req: Request, res: Response, next: NextFunction)
             throw error;
         }
         // user can authenticate
-        res.clearCookie(COOKIE_NAME); // clear previous cookies
+        // it is necesary to set cookies that work with cross site origin with sameSite:none
+        // and secure: true
+        res.clearCookie(COOKIE_NAME, { sameSite: "none", secure: true }); // clear previous cookies
         const token = jwt.sign(
             { id: foundUser._id.toHexString(), email },
             process.env.JWT_SECRET!,
@@ -80,6 +83,8 @@ export async function loginUser(req: Request, res: Response, next: NextFunction)
             path: "/",
             signed: true,
             maxAge: 3600000,
+            sameSite: "none",
+            secure: true,
         });
         return res.status(200).json({
             token: token,
