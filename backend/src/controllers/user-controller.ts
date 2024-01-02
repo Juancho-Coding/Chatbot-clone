@@ -8,6 +8,7 @@ import { User } from "../models/user";
 import { IChat, Chat } from "../models/chat";
 import GenError from "../utils/generalError";
 import { COOKIE_NAME } from "../utils/constants";
+import { tokenGeneration } from "../utils/tokenManager";
 
 /**
  * returns all the users
@@ -69,13 +70,7 @@ export async function loginUser(req: Request, res: Response, next: NextFunction)
         // it is necesary to set cookies that work with cross site origin with sameSite:none
         // and secure: true
         res.clearCookie(COOKIE_NAME, { sameSite: "none", secure: true }); // clear previous cookies
-        const token = jwt.sign(
-            { id: foundUser._id.toHexString(), email },
-            process.env.JWT_SECRET!,
-            {
-                expiresIn: "1h",
-            }
-        );
+        const token = tokenGeneration(foundUser._id.toHexString(), email, "1h");
         // set a new cookie with the created token
         res.cookie(COOKIE_NAME, token, {
             httpOnly: true,
