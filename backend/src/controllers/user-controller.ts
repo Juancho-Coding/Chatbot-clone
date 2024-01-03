@@ -8,7 +8,7 @@ import { User } from "../models/user";
 import { IChat, Chat } from "../models/chat";
 import GenError from "../utils/generalError";
 import { COOKIE_NAME } from "../utils/constants";
-import { tokenGeneration } from "../utils/tokenManager";
+import { tokenGeneration, tokenPayload } from "../utils/tokenManager";
 
 /**
  * returns all the users
@@ -90,6 +90,53 @@ export async function loginUser(req: Request, res: Response, next: NextFunction)
     } catch (error) {
         next(error);
     }
+}
+
+export async function userAuthStatus(req: Request, res: Response, next: NextFunction) {
+    console.log(res.locals.jwtData);
+    res.status(200).json({ mensaje: "ok" });
+
+    /* const email: string = req.body.email;
+    const password: string = req.body.password;
+    // check for validation errors
+    if (checkValidationErrors(req, res, 422)) return;
+    // no error, continue login
+    log("entre");
+    try {
+        let foundUser = await User.findOne({ email: email });
+        if (!foundUser) {
+            const error = new GenError("email not found", 401); // user not found
+            throw error;
+        }
+        let validPass = await bcrypt.compare(password, foundUser.password);
+        if (!validPass) {
+            const error = new GenError("Invalid credentials", 401); // incorrect password
+            throw error;
+        }
+        // user can authenticate
+        // it is necesary to set cookies that work with cross site origin with sameSite:none
+        // and secure: true
+        res.clearCookie(COOKIE_NAME, { sameSite: "none", secure: true }); // clear previous cookies
+        const token = tokenGeneration(foundUser._id.toHexString(), email, "1h");
+        // set a new cookie with the created token
+        res.cookie(COOKIE_NAME, token, {
+            httpOnly: true,
+            domain: process.env.COOKIE_DOMAIN || "localhost",
+            path: "/",
+            signed: true,
+            maxAge: 3600000,
+            sameSite: "none",
+            secure: true,
+        });
+        return res.status(200).json({
+            token: token,
+            user: foundUser._id.toHexString(),
+            name: foundUser.name,
+            email: foundUser.email,
+        });
+    } catch (error) {
+        next(error);
+    } */
 }
 
 /**

@@ -45,7 +45,10 @@ export function tokenValidation(req: Request, res: Response, next: NextFunction)
     }
     const foundCookie = cookies[COOKIE_NAME];
     const verificationResult = tokenVerification(foundCookie);
-    if (verificationResult) return next();
+    if (verificationResult) {
+        res.locals.jwtData = foundCookie;
+        return next();
+    }
     return res.status(401).json({ msj: "Invalid or expired token" });
 }
 

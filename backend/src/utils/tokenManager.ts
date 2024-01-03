@@ -1,5 +1,7 @@
 import jwt from "jsonwebtoken";
 
+export type tokenPayload = { id: string; email: string };
+
 /**
  * Generates a jwt, the payload is the user id, email
  * @param id identification of the user
@@ -8,7 +10,8 @@ import jwt from "jsonwebtoken";
  * @returns json web token
  */
 export function tokenGeneration(id: string, email: string, expiresIn: string): string {
-    return jwt.sign({ id, email }, process.env.JWT_SECRET!, { expiresIn: expiresIn });
+    const payload: tokenPayload = { id, email };
+    return jwt.sign(payload, process.env.JWT_SECRET!, { expiresIn: expiresIn });
 }
 
 /**
