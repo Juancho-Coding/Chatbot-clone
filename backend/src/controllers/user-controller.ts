@@ -8,6 +8,7 @@ import { User } from "../models/user";
 import { IChat, Chat } from "../models/chat";
 import GenError from "../utils/generalError";
 import { COOKIE_NAME } from "../utils/constants";
+import { tokenGeneration, tokenPayload } from "../utils/tokenManager";
 
 /**
  * returns all the users
@@ -65,14 +66,10 @@ export async function loginUser(req: Request, res: Response, next: NextFunction)
             throw error;
         }
         // user can authenticate
-        res.clearCookie(COOKIE_NAME); // clear previous cookies
-        const token = jwt.sign(
-            { id: foundUser._id.toHexString(), email },
-            process.env.JWT_SECRET!,
-            {
-                expiresIn: "1h",
-            }
-        );
+        // it is necesary to set cookies that work with cross site origin with sameSite:none
+        // and secure: true
+        res.clearCookie(COOKIE_NAME, { sameSite: "none", secure: true }); // clear previous cookies
+        const token = tokenGeneration(foundUser._id.toHexString(), email, "1h");
         // set a new cookie with the created token
         res.cookie(COOKIE_NAME, token, {
             httpOnly: true,
@@ -80,9 +77,33 @@ export async function loginUser(req: Request, res: Response, next: NextFunction)
             path: "/",
             signed: true,
             maxAge: 3600000,
+            sameSite: "none",
+            secure: true,
         });
         return res.status(200).json({
             token: token,
+            user: foundUser._id.toHexString(),
+            name: foundUser.name,
+            email: foundUser.email,
+        });
+    } catch (error) {
+        next(error);
+    }
+}
+
+/**
+ * Checks that user information extracted from token exists and is valid
+ */
+export async function userAuthStatus(req: Request, res: Response, next: NextFunction) {
+    const id: string = res.locals.jwtData.id as string;
+    try {
+        let foundUser = await User.findById(id);
+        if (!foundUser) {
+            const error = new GenError("token identification didn't match", 401); // user not found
+            throw error;
+        }
+        // user is valid
+        return res.status(200).json({
             user: foundUser._id.toHexString(),
             name: foundUser.name,
             email: foundUser.email,
