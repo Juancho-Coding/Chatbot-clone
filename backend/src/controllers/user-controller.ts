@@ -54,7 +54,6 @@ export async function loginUser(req: Request, res: Response, next: NextFunction)
     // check for validation errors
     if (checkValidationErrors(req, res, 422)) return;
     // no error, continue login
-    log("entre");
     try {
         let foundUser = await User.findOne({ email: email });
         if (!foundUser) {
@@ -92,51 +91,26 @@ export async function loginUser(req: Request, res: Response, next: NextFunction)
     }
 }
 
+/**
+ * Checks that user information extracted from token exists and is valid
+ */
 export async function userAuthStatus(req: Request, res: Response, next: NextFunction) {
-    console.log(res.locals.jwtData);
-    res.status(200).json({ mensaje: "ok" });
-
-    /* const email: string = req.body.email;
-    const password: string = req.body.password;
-    // check for validation errors
-    if (checkValidationErrors(req, res, 422)) return;
-    // no error, continue login
-    log("entre");
+    const id: string = res.locals.jwtData.id as string;
     try {
-        let foundUser = await User.findOne({ email: email });
+        let foundUser = await User.findById(id);
         if (!foundUser) {
-            const error = new GenError("email not found", 401); // user not found
+            const error = new GenError("token identification didn't match", 401); // user not found
             throw error;
         }
-        let validPass = await bcrypt.compare(password, foundUser.password);
-        if (!validPass) {
-            const error = new GenError("Invalid credentials", 401); // incorrect password
-            throw error;
-        }
-        // user can authenticate
-        // it is necesary to set cookies that work with cross site origin with sameSite:none
-        // and secure: true
-        res.clearCookie(COOKIE_NAME, { sameSite: "none", secure: true }); // clear previous cookies
-        const token = tokenGeneration(foundUser._id.toHexString(), email, "1h");
-        // set a new cookie with the created token
-        res.cookie(COOKIE_NAME, token, {
-            httpOnly: true,
-            domain: process.env.COOKIE_DOMAIN || "localhost",
-            path: "/",
-            signed: true,
-            maxAge: 3600000,
-            sameSite: "none",
-            secure: true,
-        });
+        // user is valid
         return res.status(200).json({
-            token: token,
             user: foundUser._id.toHexString(),
             name: foundUser.name,
             email: foundUser.email,
         });
     } catch (error) {
         next(error);
-    } */
+    }
 }
 
 /**

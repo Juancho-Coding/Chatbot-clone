@@ -39,17 +39,18 @@ export const validateLogin = [
  * @param next Next function
  */
 export function tokenValidation(req: Request, res: Response, next: NextFunction) {
-    const cookies = req.cookies as TypeCookies;
-    if (!cookies[COOKIE_NAME]) {
-        return res.status(401).json({ msj: "Invalid or expired token" });
+    const cookies = req.signedCookies as TypeCookies;
+    if (!cookies[COOKIE_NAME] || cookies[COOKIE_NAME].trim() === "") {
+        console.log("no cookies found");
+        return res.status(401).json({ message: "Invalid or expired token" });
     }
     const foundCookie = cookies[COOKIE_NAME];
     const verificationResult = tokenVerification(foundCookie);
     if (verificationResult) {
-        res.locals.jwtData = foundCookie;
+        res.locals.jwtData = verificationResult;
         return next();
     }
-    return res.status(401).json({ msj: "Invalid or expired token" });
+    return res.status(401).json({ message: "Invalid or expired token" });
 }
 
 type TypeCookies = { [key: string]: string };

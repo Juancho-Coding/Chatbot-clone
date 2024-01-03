@@ -1,4 +1,4 @@
-import jwt from "jsonwebtoken";
+import jwt, { Jwt } from "jsonwebtoken";
 
 export type tokenPayload = { id: string; email: string };
 
@@ -17,13 +17,14 @@ export function tokenGeneration(id: string, email: string, expiresIn: string): s
 /**
  * verifies the token received was generated from this server
  * @param token teken received
- * @returns token was verified?
+ * @returns token was verified, user id, user email
  */
-export function tokenVerification(token: string): boolean {
+export function tokenVerification(token: string): { status: boolean; id?: string; email?: string } {
     try {
-        jwt.verify(token, process.env.JWT_SECRET!);
-        return true;
+        const result = <jwt.JwtPayload>jwt.verify(token, process.env.JWT_SECRET!);
+        console.log(result);
+        return { status: true, id: result["id"] as string, email: result["email"] as string };
     } catch (error) {
-        return false;
+        return { status: false };
     }
 }
