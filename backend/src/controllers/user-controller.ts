@@ -8,7 +8,7 @@ import { User } from "../models/user";
 import { IChat, Chat } from "../models/chat";
 import GenError from "../utils/generalError";
 import { COOKIE_NAME } from "../utils/constants";
-import { tokenGeneration } from "../utils/tokenManager";
+import { tokenGeneration, tokenPayload } from "../utils/tokenManager";
 
 /**
  * returns all the users
@@ -54,7 +54,6 @@ export async function loginUser(req: Request, res: Response, next: NextFunction)
     // check for validation errors
     if (checkValidationErrors(req, res, 422)) return;
     // no error, continue login
-    log("entre");
     try {
         let foundUser = await User.findOne({ email: email });
         if (!foundUser) {
@@ -83,6 +82,28 @@ export async function loginUser(req: Request, res: Response, next: NextFunction)
         });
         return res.status(200).json({
             token: token,
+            user: foundUser._id.toHexString(),
+            name: foundUser.name,
+            email: foundUser.email,
+        });
+    } catch (error) {
+        next(error);
+    }
+}
+
+/**
+ * Checks that user information extracted from token exists and is valid
+ */
+export async function userAuthStatus(req: Request, res: Response, next: NextFunction) {
+    const id: string = res.locals.jwtData.id as string;
+    try {
+        let foundUser = await User.findById(id);
+        if (!foundUser) {
+            const error = new GenError("token identification didn't match", 401); // user not found
+            throw error;
+        }
+        // user is valid
+        return res.status(200).json({
             user: foundUser._id.toHexString(),
             name: foundUser.name,
             email: foundUser.email,
