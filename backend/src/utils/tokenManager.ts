@@ -22,7 +22,6 @@ export function tokenGeneration(id: string, email: string, expiresIn: string): s
 export function tokenVerification(token: string): { status: boolean; id?: string; email?: string } {
     try {
         const result = <jwt.JwtPayload>jwt.verify(token, process.env.JWT_SECRET!);
-        console.log(result);
         return { status: true, id: result["id"] as string, email: result["email"] as string };
     } catch (error) {
         return { status: false };
