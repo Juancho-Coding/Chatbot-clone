@@ -3,6 +3,7 @@ import { validationResult } from "express-validator";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
+import { checkValidationErrors } from "../validators/utilities";
 import log, { logOption } from "../utils/logUtility";
 import { User } from "../models/user";
 import { IChat, Chat } from "../models/chat";
@@ -93,19 +94,23 @@ export async function loginUser(req: Request, res: Response, next: NextFunction)
 }
 
 /**
- * Utility function to check for validation error
- * @param req request
- * @param res response
- * @param code in case of error, retruned code
- * @returns true if an error exists, false otherwise
+ * Checks that user information extracted from token exists and is valid
  */
-function checkValidationErrors(req: Request, res: Response, code: number): boolean {
-    const validationErrors = validationResult(req);
-    if (!validationErrors.isEmpty()) {
-        const error = validationErrors.array()[0]; // send only the first validation error
-        const errorToSend = new GenError(error.msg, code);
-        res.status(code).json(errorToSend);
-        return true;
+export async function userAuthStatus(req: Request, res: Response, next: NextFunction) {
+    const id: string = res.locals.jwtData.id as string;
+    try {
+        let foundUser = await User.findById(id);
+        if (!foundUser) {
+            const error = new GenError("token identification didn't match", 401); // user not found
+            throw error;
+        }
+        // user is valid
+        return res.status(200).json({
+            user: foundUser._id.toHexString(),
+            name: foundUser.name,
+            email: foundUser.email,
+        });
+    } catch (error) {
+        next(error);
     }
-    return false;
 }
