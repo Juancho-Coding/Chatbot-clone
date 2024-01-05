@@ -1,74 +1,39 @@
-import React, { useContext } from "react";
+import React, { useContext, useState, useRef, useEffect } from "react";
 import { Box, Avatar, Typography, Button, IconButton } from "@mui/material";
 import { red } from "@mui/material/colors";
 import { IoMdSend } from "react-icons/io";
+import { toast } from "react-hot-toast";
 
+import { newChat } from "../api/chatApi";
 import { AuthContext } from "../context/AuthContext";
 import ChatItem from "../components/ChatItem";
 
 const Chat = () => {
-    const chatMessages = [
-        { role: "User", content: "Hello, AI Assistant!" },
-        { role: "Assistant", content: "Hi there! How can I assist you today?" },
-        { role: "User", content: "I have a question about programming." },
-        { role: "Assistant", content: "Sure, go ahead and ask. I'm here to help!" },
-        { role: "User", content: "What programming languages do you support?" },
-        {
-            role: "Assistant",
-            content:
-                "I can assist with a wide range of programming languages, including JavaScript, Python, Java, and more.",
-        },
-        { role: "User", content: "That's great! How can I improve my coding skills?" },
-        {
-            role: "Assistant",
-            content:
-                "To improve your coding skills, practice regularly, work on projects, and seek feedback from others. Additionally, consider learning new technologies and exploring different areas of programming.",
-        },
-        { role: "User", content: "Which IDEs do you recommend for web development?" },
-        {
-            role: "Assistant",
-            content:
-                "Popular IDEs for web development include Visual Studio Code, Sublime Text, Atom, and JetBrains WebStorm. It depends on your preferences and the technologies you are using.",
-        },
-        {
-            role: "User",
-            content: "Thanks for the suggestions! Do you have any tips for efficient debugging?",
-        },
-        {
-            role: "Assistant",
-            content:
-                "Absolutely! Use console.log statements, leverage breakpoints, and make use of browser developer tools. Additionally, consider using debugging features provided by your IDE.",
-        },
-        { role: "User", content: "How can I stay updated with the latest programming trends?" },
-        {
-            role: "Assistant",
-            content:
-                "Follow tech blogs, subscribe to newsletters, join online communities, and attend conferences or meetups. Also, keep an eye on popular repositories on platforms like GitHub.",
-        },
-        { role: "User", content: "What's your favorite programming language?" },
-        {
-            role: "Assistant",
-            content:
-                "I don't have personal preferences, but I can assist you with a variety of programming languages. What language are you interested in?",
-        },
-        {
-            role: "User",
-            content: "I'm interested in learning Python. Any resources you recommend?",
-        },
-        {
-            role: "Assistant",
-            content:
-                "For Python, you can start with the official Python documentation, online tutorials, and interactive platforms like Codecademy or PyBites. Practice is key!",
-        },
-        { role: "User", content: "Great advice! How can I contribute to open source projects?" },
-        {
-            role: "Assistant",
-            content:
-                "Start by finding projects you're interested in on platforms like GitHub. Read their contribution guidelines, fix bugs, and gradually make larger contributions. It's a rewarding way to improve your skills!",
-        },
-    ];
-
+    const [chatMessages, setChatMessages] = useState([]);
+    const [message, setMessage] = useState("");
     const context = useContext(AuthContext);
+    const scrollRef = useRef(null);
+
+    const handleSubmit = async (event) => {
+        event.preventDefault();
+        try {
+            if (message.length > 0) {
+                setChatMessages((prev) => {
+                    return [...prev, { role: "user", content: message }];
+                });
+                const result = await newChat(message);
+                setMessage("");
+                setChatMessages([...result.chatData]);
+            }
+        } catch (error) {
+            toast.error("An error ocurred");
+        }
+    };
+
+    useEffect(() => {
+        const lastChildElement = scrollRef.current.lastElementChild;
+        lastChildElement.scrollIntoView({ behavior: "smooth" });
+    }, [chatMessages]);
 
     return (
         <Box
@@ -153,6 +118,7 @@ const Chat = () => {
                     Model ChatGPT 3.5 Turbo
                 </Typography>
                 <Box
+                    ref={scrollRef}
                     sx={{
                         width: "100%",
                         height: "60vh",
@@ -179,33 +145,41 @@ const Chat = () => {
                         );
                     })}
                 </Box>
-                <div
-                    style={{
-                        boxSizing: "border-box",
-                        width: "100%",
-                        padding: "20px",
-                        borderRadius: 8,
-                        backgroundColor: "rgb(17,27,39",
-                        display: "flex",
-                        margin: "auto",
-                        marginTop: "10px",
-                    }}
-                >
-                    <input
-                        type="text"
+                <form onSubmit={handleSubmit}>
+                    <div
                         style={{
+                            boxSizing: "border-box",
                             width: "100%",
-                            backgroundColor: "transparent",
-                            outline: "none",
-                            color: "white",
-                            fontSize: "20px",
-                            border: "none",
+                            padding: "20px",
+                            borderRadius: 8,
+                            backgroundColor: "rgb(17,27,39",
+                            display: "flex",
+                            margin: "auto",
+                            marginTop: "10px",
                         }}
-                    />
-                    <IconButton sx={{ ml: "auto", color: "white" }}>
-                        <IoMdSend />
-                    </IconButton>
-                </div>
+                    >
+                        <input
+                            type="text"
+                            name="message"
+                            placeholder="Ask something"
+                            value={message}
+                            onChange={(event) => {
+                                setMessage(event.target.value);
+                            }}
+                            style={{
+                                width: "100%",
+                                backgroundColor: "transparent",
+                                outline: "none",
+                                color: "white",
+                                fontSize: "20px",
+                                border: "none",
+                            }}
+                        />
+                        <IconButton type="submit" sx={{ ml: "auto", color: "white" }}>
+                            <IoMdSend />
+                        </IconButton>
+                    </div>
+                </form>
             </Box>
         </Box>
     );
