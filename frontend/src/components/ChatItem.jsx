@@ -4,7 +4,7 @@ import { Box, Avatar, Typography, Button } from "@mui/material";
 import assistant from "../assets/avatar.png";
 
 const ChatItem = ({ content, role, userText }) => {
-    return role === "User" ? (
+    return role === "user" ? (
         <Box sx={{ display: "flex", p: 2, bgcolor: "#004d5612", gap: 2, my: 2 }}>
             <Avatar sx={{ ml: "0", bgcolor: "black", color: "white" }}>{userText}</Avatar>
             <Box>
