@@ -25,8 +25,7 @@ export async function newChatCompletion(req: Request, res: Response, next: NextF
         foundUser.chats.push(newChat);
 
         const openai = new OpenAI({
-            //apiKey: process.env.OPEN_AI_SECRET,
-            apiKey: "ssds",
+            apiKey: process.env.OPEN_AI_SECRET,
             organization: process.env.OPENAI_ORGANIZATIONID,
         });
         const chatResponse = await openai.chat.completions.create({
@@ -35,8 +34,9 @@ export async function newChatCompletion(req: Request, res: Response, next: NextF
             max_tokens: 50,
         });
         foundUser.chats.push(chatResponse.choices[0].message);
+        chats.push(chatResponse.choices[0].message);
         await foundUser.save();
-        return res.status(200).json({ message: "OK" });
+        return res.status(200).json({ chatData: chats });
     } catch (err) {
         if (err instanceof GenError) {
             return next(err);
