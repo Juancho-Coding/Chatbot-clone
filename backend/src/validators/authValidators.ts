@@ -42,7 +42,7 @@ export function tokenValidation(req: Request, res: Response, next: NextFunction)
     const cookies = req.signedCookies as TypeCookies;
     if (!cookies[COOKIE_NAME] || cookies[COOKIE_NAME].trim() === "") {
         console.log("no cookies found");
-        return res.status(401).json({ message: "Invalid or expired token" });
+        return res.status(401).json({ message: "No credentials found" });
     }
     const foundCookie = cookies[COOKIE_NAME];
     const verificationResult = tokenVerification(foundCookie);
