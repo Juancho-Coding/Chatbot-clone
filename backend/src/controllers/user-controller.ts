@@ -93,6 +93,16 @@ export async function loginUser(req: Request, res: Response, next: NextFunction)
 }
 
 /**
+ * handle logout of the user, send response deletinf cookies
+ */
+export async function logoutUser(req: Request, res: Response, next: NextFunction) {
+    const id: string = res.locals.jwtData.id as string;
+    // send response and request the deletion of cookies
+    res.clearCookie(COOKIE_NAME, { sameSite: "none", secure: true }); // clear previous cookies
+    return res.status(200).json({ message: "logout" });
+}
+
+/**
  * Checks that user information extracted from token exists and is valid
  */
 export async function userAuthStatus(req: Request, res: Response, next: NextFunction) {
